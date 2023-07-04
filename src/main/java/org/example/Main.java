@@ -138,15 +138,23 @@ public class Main extends JFrame {
 
             @Override
             public void mouseDragged(MouseEvent e) {
+                double sensitivity = 0.1;
+
                 if (draggingJoint1) {
-                    xPosTextField.setText(String.valueOf(e.getX()));
-                    yPosTextField.setText(String.valueOf(e.getY()));
+                    int newX = (int) (Integer.parseInt(xPosTextField.getText()) + (e.getX() - Integer.parseInt(xPosTextField.getText())) * sensitivity);
+                    int newY = (int) (Integer.parseInt(yPosTextField.getText()) + (e.getY() - Integer.parseInt(yPosTextField.getText())) * sensitivity);
+                    xPosTextField.setText(String.valueOf(newX));
+                    yPosTextField.setText(String.valueOf(newY));
                 } else if (draggingJoint2) {
-                    xPosTextField2.setText(String.valueOf(e.getX()));
-                    yPosTextField2.setText(String.valueOf(e.getY()));
+                    int newX = (int) (Integer.parseInt(xPosTextField2.getText()) + (e.getX() - Integer.parseInt(xPosTextField2.getText())) * sensitivity);
+                    int newY = (int) (Integer.parseInt(yPosTextField2.getText()) + (e.getY() - Integer.parseInt(yPosTextField2.getText())) * sensitivity);
+                    xPosTextField2.setText(String.valueOf(newX));
+                    yPosTextField2.setText(String.valueOf(newY));
                 } else if (draggingJoint3) {
-                    xPosTextField3.setText(String.valueOf(e.getX()));
-                    yPosTextField3.setText(String.valueOf(e.getY()));
+                    int newX = (int) (Integer.parseInt(xPosTextField3.getText()) + (e.getX() - Integer.parseInt(xPosTextField3.getText())) * sensitivity);
+                    int newY = (int) (Integer.parseInt(yPosTextField3.getText()) + (e.getY() - Integer.parseInt(yPosTextField3.getText())) * sensitivity);
+                    xPosTextField3.setText(String.valueOf(newX));
+                    yPosTextField3.setText(String.valueOf(newY));
                 }
 
                 calculateInverseKinematics();
