@@ -5,8 +5,8 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class Main extends JFrame {
-    private static final int WIDTH = 800;
-    private static final int HEIGHT = 600;
+    private static final int WIDTH = 1920;
+    private static final int HEIGHT = 1080;
     private static final int ARM_BASE_X = 400;
     private static final int ARM_BASE_Y = 400;
     private static final int ARM1_LENGTH = 100;
@@ -28,6 +28,7 @@ public class Main extends JFrame {
     private JTextField theta1TextField;
     private JTextField theta2TextField;
     private JTextField theta3TextField;
+    private JTextField appliedForceTextField;
     private JButton calculateButton;
 
     private double theta1;
@@ -37,6 +38,10 @@ public class Main extends JFrame {
     private boolean draggingJoint1;
     private boolean draggingJoint2;
     private boolean draggingJoint3;
+
+    private double forceOnJoint1;
+    private double forceOnJoint2;
+    private double forceOnJoint3;
 
     public Main() {
         setTitle("Inverse Kinematics");
@@ -71,6 +76,8 @@ public class Main extends JFrame {
         theta3TextField = new JTextField(10);
         theta3TextField.setEditable(false);
 
+        appliedForceTextField = new JTextField(10);
+
         calculateButton = new JButton("Calculate");
 
         calculateButton.addActionListener(new ActionListener() {
@@ -93,6 +100,7 @@ public class Main extends JFrame {
         add(xPosTextField3);
         add(yPosLabel3);
         add(yPosTextField3);
+        add(appliedForceTextField);
         add(calculateButton);
         add(theta1TextField);
         add(theta2TextField);
@@ -176,6 +184,8 @@ public class Main extends JFrame {
         double xPos3 = Double.parseDouble(xPosTextField3.getText());
         double yPos3 = Double.parseDouble(yPosTextField3.getText());
 
+        double appliedForce = Double.parseDouble(appliedForceTextField.getText());
+
         // Perform inverse kinematics calculations
         double L1 = ARM1_LENGTH;
         double L2 = ARM2_LENGTH;
@@ -192,6 +202,12 @@ public class Main extends JFrame {
         // Calculate theta3 using the law of cosines
         double c3 = (xPos3 * xPos3 + yPos3 * yPos3 - L3 * L3) / (2 * L3 * Math.sqrt(xPos3 * xPos3 + yPos3 * yPos3));
         theta3 = Math.acos(c3);
+
+        // Calculate the forces on each joint
+        double totalForce = appliedForce / Math.sin(theta3);
+        forceOnJoint3 = totalForce;
+        forceOnJoint2 = forceOnJoint3 / Math.sin(theta2);
+        forceOnJoint1 = forceOnJoint2 / Math.sin(theta1);
 
         // Update theta1TextField, theta2TextField, and theta3TextField with the calculated values
         theta1TextField.setText(String.valueOf(Math.toDegrees(theta1)));
@@ -228,13 +244,15 @@ public class Main extends JFrame {
         g.fillOval(arm1EndX - 5, arm1EndY - 5, 10, 10);
         g.fillOval(arm2EndX - 5, arm2EndY - 5, 10, 10);
         g.fillOval(arm3EndX - 5, arm3EndY - 5, 10, 10);
+
+        // Display the forces on each joint
+        g.setColor(Color.BLACK);
+        g.drawString("Force on Joint 1: " + forceOnJoint1, 10, 20);
+        g.drawString("Force on Joint 2: " + forceOnJoint2, 10, 40);
+        g.drawString("Force on Joint 3: " + forceOnJoint3, 10, 60);
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new Main();
-            }
-        });
+        new Main();
     }
 }
