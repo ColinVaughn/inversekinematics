@@ -42,6 +42,9 @@ public class Main extends JFrame {
     private double forceOnJoint1;
     private double forceOnJoint2;
     private double forceOnJoint3;
+    private JLabel joint1Label;
+    private JLabel joint2Label;
+    private JLabel joint3Label;
 
     public Main() {
         setTitle("Inverse Kinematics");
@@ -76,7 +79,22 @@ public class Main extends JFrame {
         theta3TextField = new JTextField(10);
         theta3TextField.setEditable(false);
 
+        joint1Label = new JLabel("Joint 1");
+        joint2Label = new JLabel("Joint 2");
+        joint3Label = new JLabel("Joint 3");
+
+        add(joint1Label);
+        add(joint2Label);
+        add(joint3Label);
+
         appliedForceTextField = new JTextField(10);
+        xPosTextField.setText("50");
+        yPosTextField.setText("50");
+        xPosTextField2.setText("200");
+        yPosTextField2.setText("200");
+        xPosTextField3.setText("61");
+        yPosTextField3.setText("271");
+        appliedForceTextField.setText("10");
 
         calculateButton = new JButton("Calculate");
 
@@ -194,14 +212,17 @@ public class Main extends JFrame {
         // Calculate theta1 using the law of cosines
         double c1 = (xPos1 * xPos1 + yPos1 * yPos1 - L1 * L1) / (2 * L1 * Math.sqrt(xPos1 * xPos1 + yPos1 * yPos1));
         theta1 = Math.acos(c1);
+        theta1 = Math.max(0, Math.min(theta1, Math.PI));
 
         // Calculate theta2 using the law of cosines
         double c2 = (xPos2 * xPos2 + yPos2 * yPos2 - L2 * L2) / (2 * L2 * Math.sqrt(xPos2 * xPos2 + yPos2 * yPos2));
         theta2 = Math.acos(c2);
+        theta2 = Math.max(0, Math.min(theta2, Math.PI));
 
         // Calculate theta3 using the law of cosines
         double c3 = (xPos3 * xPos3 + yPos3 * yPos3 - L3 * L3) / (2 * L3 * Math.sqrt(xPos3 * xPos3 + yPos3 * yPos3));
         theta3 = Math.acos(c3);
+        theta3 = Math.max(0, Math.min(theta3, Math.PI));
 
         // Calculate the forces on each joint
         double totalForce = appliedForce / Math.sin(theta3);
@@ -233,6 +254,11 @@ public class Main extends JFrame {
         int arm3EndX = (int) (arm2EndX + ARM3_LENGTH * Math.cos(theta1 + theta2 + theta3));
         int arm3EndY = (int) (arm2EndY - ARM3_LENGTH * Math.sin(theta1 + theta2 + theta3));
 
+        // Update the position of each joint label based on the endpoint coordinates
+        joint1Label.setBounds(arm1EndX + 10, arm1EndY - 30, 60, 20);
+        joint2Label.setBounds(arm2EndX + 10, arm2EndY - 30, 60, 20);
+        joint3Label.setBounds(arm3EndX + 10, arm3EndY - 30, 60, 20);
+
         // Draw the arms
         g.setColor(Color.BLACK);
         g.drawLine(ARM_BASE_X, ARM_BASE_Y, arm1EndX, arm1EndY);
@@ -247,9 +273,10 @@ public class Main extends JFrame {
 
         // Display the forces on each joint
         g.setColor(Color.BLACK);
-        g.drawString("Force on Joint 1: " + forceOnJoint1, 10, 20);
-        g.drawString("Force on Joint 2: " + forceOnJoint2, 10, 40);
-        g.drawString("Force on Joint 3: " + forceOnJoint3, 10, 60);
+        g.drawString("force joint 1: " + forceOnJoint1, 10, 40);
+        g.drawString("force joint 2: " + forceOnJoint2, 10, 60);
+        g.drawString("force joint 3: " + forceOnJoint3, 10, 80);
+
     }
 
     public static void main(String[] args) {
