@@ -276,7 +276,6 @@ public class Main extends JFrame {
         g.drawString("force joint 1: " + forceOnJoint1, 10, 40);
         g.drawString("force joint 2: " + forceOnJoint2, 10, 60);
         g.drawString("force joint 3: " + forceOnJoint3, 10, 80);
-
     }
 
     public static void main(String[] args) {
