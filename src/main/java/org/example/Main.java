@@ -19,14 +19,6 @@ public class Main extends JFrame {
     private JLabel yPosLabel2;
     private JLabel xPosLabel3;
     private JLabel yPosLabel3;
-    private JLabel theta1Label;
-    private JLabel theta2Label;
-    private JLabel theta3Label;
-    private JLabel loadLabel;
-    private JLabel joint1LoadLabel;
-    private JLabel joint2LoadLabel;
-    private JLabel joint3LoadLabel;
-
     private JTextField xPosTextField;
     private JTextField yPosTextField;
     private JTextField xPosTextField2;
@@ -36,9 +28,15 @@ public class Main extends JFrame {
     private JTextField theta1TextField;
     private JTextField theta2TextField;
     private JTextField theta3TextField;
-    private JTextField loadTextField;
-
     private JButton calculateButton;
+
+    private double theta1;
+    private double theta2;
+    private double theta3;
+
+    private boolean draggingJoint1;
+    private boolean draggingJoint2;
+    private boolean draggingJoint3;
 
     public Main() {
         setTitle("Inverse Kinematics");
@@ -46,13 +44,6 @@ public class Main extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new FlowLayout());
 
-        initializeComponents();
-        setupListeners();
-
-        setVisible(true);
-    }
-
-    private void initializeComponents() {
         xPosLabel = new JLabel("X Position:");
         xPosTextField = new JTextField(10);
 
@@ -71,26 +62,24 @@ public class Main extends JFrame {
         yPosLabel3 = new JLabel("Y Position 3:");
         yPosTextField3 = new JTextField(10);
 
-        theta1Label = new JLabel("Theta 1:");
         theta1TextField = new JTextField(10);
         theta1TextField.setEditable(false);
 
-        theta2Label = new JLabel("Theta 2:");
         theta2TextField = new JTextField(10);
         theta2TextField.setEditable(false);
 
-        theta3Label = new JLabel("Theta 3:");
         theta3TextField = new JTextField(10);
         theta3TextField.setEditable(false);
 
-        loadLabel = new JLabel("Load (Newtons):");
-        loadTextField = new JTextField(10);
-
-        joint1LoadLabel = new JLabel("Joint 1 Load:");
-        joint2LoadLabel = new JLabel("Joint 2 Load:");
-        joint3LoadLabel = new JLabel("Joint 3 Load:");
-
         calculateButton = new JButton("Calculate");
+
+        calculateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                calculateInverseKinematics();
+                repaint();
+            }
+        });
 
         add(xPosLabel);
         add(xPosTextField);
@@ -104,29 +93,69 @@ public class Main extends JFrame {
         add(xPosTextField3);
         add(yPosLabel3);
         add(yPosTextField3);
-        add(theta1Label);
-        add(theta1TextField);
-        add(theta2Label);
-        add(theta2TextField);
-        add(theta3Label);
-        add(theta3TextField);
-        add(loadLabel);
-        add(loadTextField);
         add(calculateButton);
-        add(joint1LoadLabel);
-        add(joint2LoadLabel);
-        add(joint3LoadLabel);
+        add(theta1TextField);
+        add(theta2TextField);
+        add(theta3TextField);
+
+        setupMouseListener();
+
+        setVisible(true);
     }
 
-    private void setupListeners() {
-        calculateButton.addActionListener(new ActionListener() {
+    private void setupMouseListener() {
+        MouseAdapter mouseAdapter = new MouseAdapter() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void mousePressed(MouseEvent e) {
+                int x = e.getX();
+                int y = e.getY();
+
+                int arm1EndX = (int) (ARM_BASE_X + ARM1_LENGTH * Math.cos(theta1));
+                int arm1EndY = (int) (ARM_BASE_Y - ARM1_LENGTH * Math.sin(theta1));
+
+                int arm2EndX = (int) (arm1EndX + ARM2_LENGTH * Math.cos(theta1 + theta2));
+                int arm2EndY = (int) (arm1EndY - ARM2_LENGTH * Math.sin(theta1 + theta2));
+
+                int arm3EndX = (int) (arm2EndX + ARM3_LENGTH * Math.cos(theta1 + theta2 + theta3));
+                int arm3EndY = (int) (arm2EndY - ARM3_LENGTH * Math.sin(theta1 + theta2 + theta3));
+
+                if (distance(x, y, arm1EndX, arm1EndY) <= 10) {
+                    draggingJoint1 = true;
+                } else if (distance(x, y, arm2EndX, arm2EndY) <= 10) {
+                    draggingJoint2 = true;
+                } else if (distance(x, y, arm3EndX, arm3EndY) <= 10) {
+                    draggingJoint3 = true;
+                }
+            }
+
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                draggingJoint1 = false;
+                draggingJoint2 = false;
+                draggingJoint3 = false;
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (draggingJoint1) {
+                    xPosTextField.setText(String.valueOf(e.getX()));
+                    yPosTextField.setText(String.valueOf(e.getY()));
+                } else if (draggingJoint2) {
+                    xPosTextField2.setText(String.valueOf(e.getX()));
+                    yPosTextField2.setText(String.valueOf(e.getY()));
+                } else if (draggingJoint3) {
+                    xPosTextField3.setText(String.valueOf(e.getX()));
+                    yPosTextField3.setText(String.valueOf(e.getY()));
+                }
+
                 calculateInverseKinematics();
-                calculateJointLoads();
                 repaint();
             }
-        });
+        };
+
+        addMouseListener(mouseAdapter);
+        addMouseMotionListener(mouseAdapter);
     }
 
     private void calculateInverseKinematics() {
@@ -146,15 +175,15 @@ public class Main extends JFrame {
 
         // Calculate theta1 using the law of cosines
         double c1 = (xPos1 * xPos1 + yPos1 * yPos1 - L1 * L1) / (2 * L1 * Math.sqrt(xPos1 * xPos1 + yPos1 * yPos1));
-        double theta1 = Math.acos(c1);
+        theta1 = Math.acos(c1);
 
         // Calculate theta2 using the law of cosines
         double c2 = (xPos2 * xPos2 + yPos2 * yPos2 - L2 * L2) / (2 * L2 * Math.sqrt(xPos2 * xPos2 + yPos2 * yPos2));
-        double theta2 = Math.acos(c2);
+        theta2 = Math.acos(c2);
 
         // Calculate theta3 using the law of cosines
         double c3 = (xPos3 * xPos3 + yPos3 * yPos3 - L3 * L3) / (2 * L3 * Math.sqrt(xPos3 * xPos3 + yPos3 * yPos3));
-        double theta3 = Math.acos(c3);
+        theta3 = Math.acos(c3);
 
         // Update theta1TextField, theta2TextField, and theta3TextField with the calculated values
         theta1TextField.setText(String.valueOf(Math.toDegrees(theta1)));
@@ -162,16 +191,8 @@ public class Main extends JFrame {
         theta3TextField.setText(String.valueOf(Math.toDegrees(theta3)));
     }
 
-    private void calculateJointLoads() {
-        double load = Double.parseDouble(loadTextField.getText());
-        double joint1Load = load / 3;
-        double joint2Load = load / 3;
-        double joint3Load = load / 3;
-
-        // Update joint1LoadLabel, joint2LoadLabel, and joint3LoadLabel with the calculated values
-        joint1LoadLabel.setText("Joint 1 Load: " + joint1Load + " N");
-        joint2LoadLabel.setText("Joint 2 Load: " + joint2Load + " N");
-        joint3LoadLabel.setText("Joint 3 Load: " + joint3Load + " N");
+    private double distance(int x1, int y1, int x2, int y2) {
+        return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
     }
 
     @Override
@@ -179,10 +200,6 @@ public class Main extends JFrame {
         super.paint(g);
 
         // Calculate the endpoints of the arms based on theta1, theta2, and theta3
-        double theta1 = Math.toRadians(Double.parseDouble(theta1TextField.getText()));
-        double theta2 = Math.toRadians(Double.parseDouble(theta2TextField.getText()));
-        double theta3 = Math.toRadians(Double.parseDouble(theta3TextField.getText()));
-
         int arm1EndX = (int) (ARM_BASE_X + ARM1_LENGTH * Math.cos(theta1));
         int arm1EndY = (int) (ARM_BASE_Y - ARM1_LENGTH * Math.sin(theta1));
 
@@ -197,6 +214,12 @@ public class Main extends JFrame {
         g.drawLine(ARM_BASE_X, ARM_BASE_Y, arm1EndX, arm1EndY);
         g.drawLine(arm1EndX, arm1EndY, arm2EndX, arm2EndY);
         g.drawLine(arm2EndX, arm2EndY, arm3EndX, arm3EndY);
+
+        // Draw the joints
+        g.setColor(Color.RED);
+        g.fillOval(arm1EndX - 5, arm1EndY - 5, 10, 10);
+        g.fillOval(arm2EndX - 5, arm2EndY - 5, 10, 10);
+        g.fillOval(arm3EndX - 5, arm3EndY - 5, 10, 10);
     }
 
     public static void main(String[] args) {
